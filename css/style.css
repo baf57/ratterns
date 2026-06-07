@@ -11,3 +11,8 @@ body {
     min-height: 100vh;
     background: #f0f0f0;
 }
+
+.dark-mode {
+    background: #13111C; /* Obsidian dark mode */
+    /* https://mypalettetool.com/blog/dark-mode-color-palettes */
+}
