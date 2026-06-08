@@ -1,3 +1,11 @@
+// some global params
+const CANVASWIDTH = 600;
+const CANVASHEIGHT = 400;
+const DOWNSCALE = 1;
+const MAXELEVATION = 255;
+const ELEVATIONRESOLUTION = 0.02;
+let elevation;
+
 class Terrain{
     #array;
     #width;
@@ -42,10 +50,11 @@ class Terrain{
 
     #noiseOctave(i, j, octave){
         // apply a noise octave to the array at pos [i][j]
+        // I need to fix the lacunarity... maybe?
         let i_offset_scaled = (i + (octave * this.#wOffset)) 
-                                * this.#elevationResolution;
+                                * (this.#elevationResolution / (octave+1));
         let j_offset_scaled = (j + (octave * this.#hOffset)) 
-                                * this.#elevationResolution;
+                                * (this.#elevationResolution / (octave+1));
         let amplitude = octave == 0 ? 1 : this.#scaling / octave;
         let addedNoise = amplitude * (noise(i_offset_scaled,j_offset_scaled));
 
@@ -53,15 +62,6 @@ class Terrain{
         this.#array[i][j] /= 1 + amplitude;
     }
 }
-
-
-// some global params
-const CANVASWIDTH = 600;
-const CANVASHEIGHT = 400;
-const DOWNSCALE = 5;
-const MAXELEVATION = 255;
-const ELEVATIONRESOLUTION = 0.1;
-let elevation;
 
 function setup() {
 
@@ -77,8 +77,8 @@ function setup() {
                            CANVASHEIGHT/DOWNSCALE,
                            MAXELEVATION,
                            ELEVATIONRESOLUTION,
-                           5,
-                           0.9
+                           4,
+                           0.5
    );
 }
 
