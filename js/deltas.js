@@ -1,6 +1,6 @@
 // some global params
-const CANVASWIDTH = 600;
-const CANVASHEIGHT = 400;
+const CANVASWIDTH = 400;
+const CANVASHEIGHT = 750;
 const DOWNSCALE = 1;
 const ELEVATIONRESOLUTION = 0.02;
 
@@ -25,19 +25,19 @@ class DeltaScene{
         return 1 - (j/this.#height);
     }
 
-    #applyNoise(i, j, elevationResolution, val=-1){
-        // apply a noise octave to the array at pos (i,j)
+    #applyNoise(i, j, elevationResolution, val=-1, strength=0.5){
+        // apply noise to the array at pos (i,j)
         let i_scaled = i * elevationResolution;
         let j_scaled = j * elevationResolution;
 
-        let addedNoise = noise(i_scaled,j_scaled);
+        let addedNoise = strength * noise(i_scaled,j_scaled);
 
-        val = val<0 ? addedNoise : (val + addedNoise)/2;
+        val = val<0 ? addedNoise : ((1-strength)*val) + addedNoise;
 
         return val
     }
 
-    generateTerain(elevationResolution, octaves, scaling){
+    generateTerain(elevationResolution, octaves, scaling, noiseStrength){
         /* Generates terrain for the scene which is based on an overlay of
         mutli-octave Perlin noise over a linear gradient which runs high to low
         from north to south.
@@ -50,9 +50,10 @@ class DeltaScene{
         for(let i=0;i<this.#width;i++){
             for(let j=0;j<this.#height;j++){
                 val = this.#applyNoise(i,
-                                        j,
-                                        elevationResolution,
-                                        this.#linearGradient(i,j));
+                                       j,
+                                       elevationResolution,
+                                       this.#linearGradient(i,j),
+                                       noiseStrength);
                 maxElevation = max(maxElevation, val);
                 this.terain.array[i][j] = val;
             }
@@ -78,7 +79,7 @@ class DeltaScene{
         }
     }
 
-    generateWater(waterLine){
+    generateCoastline(waterLine){
         // Just fills up to a waterline to start
         let currElevation, val;
         let maxWaterDepth = 0;
@@ -96,7 +97,7 @@ class DeltaScene{
         this.#maxWaterDepth = maxWaterDepth != 0 ? maxWaterDepth : 1;
     }
 
-    drawWater(baseColor = [255,255,255], overlay=false){
+    drawWater(baseColor = [255,255,255], ignoreDepth=false, overlay=false){
         let currDepth, currDRatio, currColor, alpha;
         if(overlay){
             this.drawTerain([255,255,255]);
@@ -105,25 +106,44 @@ class DeltaScene{
         else{
             alpha = 255;
         }
-        for(let i=0;i<this.#width;i++){
-            for(let j=0;j<this.#height;j++){
-                currDepth = this.water.array[i][j];
-                currDRatio = currDepth / this.#maxWaterDepth;
-                currColor = [baseColor[0] * currDRatio,
-                            baseColor[1] * currDRatio,
-                            baseColor[2] * currDRatio,
-                            alpha];
-                fill(...currColor);
-                rect(i*DOWNSCALE,
-                    j*DOWNSCALE,
-                    DOWNSCALE,
-                    DOWNSCALE);
+        if(ignoreDepth){
+            for(let i=0;i<this.#width;i++){
+                for(let j=0;j<this.#height;j++){
+                    currDepth = this.water.array[i][j];
+                    currDRatio = currDepth > 0 ? 1 : 0;
+                    currColor = [baseColor[0] * currDRatio,
+                                baseColor[1] * currDRatio,
+                                baseColor[2] * currDRatio,
+                                alpha];
+                    fill(...currColor);
+                    rect(i*DOWNSCALE,
+                        j*DOWNSCALE,
+                        DOWNSCALE,
+                        DOWNSCALE);
+                }
+            }
+        }
+        else{
+            for(let i=0;i<this.#width;i++){
+                for(let j=0;j<this.#height;j++){
+                    currDepth = this.water.array[i][j];
+                    currDRatio = currDepth / this.#maxWaterDepth;
+                    currColor = [baseColor[0] * currDRatio,
+                                baseColor[1] * currDRatio,
+                                baseColor[2] * currDRatio,
+                                alpha];
+                    fill(...currColor);
+                    rect(i*DOWNSCALE,
+                        j*DOWNSCALE,
+                        DOWNSCALE,
+                        DOWNSCALE);
+                }
             }
         }
     }
 }
 
-let scene, wDepth;
+let scene, wDepth, t1, t2;
 
 function setup() {
 
@@ -138,16 +158,22 @@ function setup() {
     scene = new DeltaScene(CANVASWIDTH/DOWNSCALE, CANVASHEIGHT/DOWNSCALE);
     scene.generateTerain(ELEVATIONRESOLUTION,
                          4,
-                         0.5);
+                         0.5,
+                         0.2);
 
     // for seeing reasonable water depths
-    wDepth = 0;
+    wDepth = 0.2;
 }
 
 function draw() {
+    t1 = performance.now();
     console.log("wDepth:",wDepth);
-    scene.generateWater(wDepth);
-    scene.drawWater([0,0,255]);//, true);
+    scene.generateCoastline(wDepth);
+    scene.drawWater([0,0,255], ignoreDepth=true, overlay=true);
+    t2 = performance.now();
+    console.log("Time to draw scene:", (t2-t1)/1000, "seconds");
+    fill(255);
+    text("wDepth = " + round(wDepth,1),CANVASWIDTH-100,50,100);
     wDepth += 0.1;
 }
 
