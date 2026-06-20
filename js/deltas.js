@@ -107,19 +107,17 @@ class DeltaScene{
             alpha = 255;
         }
         if(ignoreDepth){
+            baseColor.push(alpha);
             for(let i=0;i<this.#width;i++){
                 for(let j=0;j<this.#height;j++){
                     currDepth = this.water.array[i][j];
-                    currDRatio = currDepth > 0 ? 1 : 0;
-                    currColor = [baseColor[0] * currDRatio,
-                                baseColor[1] * currDRatio,
-                                baseColor[2] * currDRatio,
-                                alpha];
-                    fill(...currColor);
-                    rect(i*DOWNSCALE,
-                        j*DOWNSCALE,
-                        DOWNSCALE,
-                        DOWNSCALE);
+                    if(currDepth > 0){
+                        fill(...baseColor);
+                        rect(i*DOWNSCALE,
+                            j*DOWNSCALE,
+                            DOWNSCALE,
+                            DOWNSCALE);
+                    }
                 }
             }
         }
@@ -127,16 +125,18 @@ class DeltaScene{
             for(let i=0;i<this.#width;i++){
                 for(let j=0;j<this.#height;j++){
                     currDepth = this.water.array[i][j];
-                    currDRatio = currDepth / this.#maxWaterDepth;
-                    currColor = [baseColor[0] * currDRatio,
-                                baseColor[1] * currDRatio,
-                                baseColor[2] * currDRatio,
-                                alpha];
-                    fill(...currColor);
-                    rect(i*DOWNSCALE,
-                        j*DOWNSCALE,
-                        DOWNSCALE,
-                        DOWNSCALE);
+                    if(currDepth > 0){
+                        currDRatio = currDepth / this.#maxWaterDepth;
+                        currColor = [baseColor[0] * currDRatio,
+                                    baseColor[1] * currDRatio,
+                                    baseColor[2] * currDRatio,
+                                    alpha];
+                        fill(...currColor);
+                        rect(i*DOWNSCALE,
+                            j*DOWNSCALE,
+                            DOWNSCALE,
+                            DOWNSCALE);
+                    }
                 }
             }
         }
@@ -167,6 +167,7 @@ function setup() {
 
 function draw() {
     t1 = performance.now();
+    background(0);
     console.log("wDepth:",wDepth);
     scene.generateCoastline(wDepth);
     scene.drawWater([0,0,255], ignoreDepth=true, overlay=true);
