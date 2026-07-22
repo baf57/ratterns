@@ -143,43 +143,60 @@ class DeltaScene{
     }
 }
 
-let scene, wDepth, t1, t2;
+let scene, inpOctaves, inpScaling, inpNoiseStrength, inpOceanDepth,
+    inpOctavesTxt;
+
+function deltaInit(octaves, scaling, noiseStrength, oceanDepth){
+    scene = new DeltaScene(CANVASWIDTH/DOWNSCALE, CANVASHEIGHT/DOWNSCALE);
+    scene.generateTerain(ELEVATIONRESOLUTION,
+                         octaves,
+                         scaling,
+                         noiseStrength);
+    scene.generateCoastline(oceanDepth);
+}
+
+let t1, t2;
 
 function setup() {
 
     // canvas setup
     createCanvas(CANVASWIDTH, CANVASHEIGHT);
     noStroke();
+    t1=100;
+    background(t1);
 
-    // wait for click to animate
+    // wait to animate at first
     noLoop();
 
-    // create scene and generate terain
-    scene = new DeltaScene(CANVASWIDTH/DOWNSCALE, CANVASHEIGHT/DOWNSCALE);
-    scene.generateTerain(ELEVATIONRESOLUTION,
-                         4,
-                         0.5,
-                         0.2);
-
-    // for seeing reasonable water depths
-    wDepth = 0.2;
+    // create input boxes
+    inpOctaves = createInput("4", "range");
+    inpOctaves.elt.min = 1;
+    inpOctaves.elt.max = 10;
+    inpOctaves.position(0,CANVASHEIGHT+100);
+    inpOctavesTxt = createDiv(inpOctaves.value().toString());
+    inpOctavesTxt.position(200,CANVASHEIGHT+100)
+    inpOctavesTxt.style.color = "white";
+    inpOctaves.elt.oninput = function(){
+        inpOctavesTxt.innerHTML = inpOctaves.value();
+    }
 }
 
 function draw() {
+    // create scene and generate terain
+    /*deltaInit(4, 0.5, 0.2, 0.2);
     t1 = performance.now();
     background(0);
-    console.log("wDepth:",wDepth);
-    scene.generateCoastline(wDepth);
     scene.drawWater([0,0,255], ignoreDepth=true, overlay=true);
     t2 = performance.now();
     console.log("Time to draw scene:", (t2-t1)/1000, "seconds");
-    fill(255);
-    text("wDepth = " + round(wDepth,1),CANVASWIDTH-100,50,100);
-    wDepth += 0.1;
+    fill(255);*/
 }
 
 // move forward one frame on click
 function mouseClicked(){
+    t1+=10;
+    background(t1);
+    console.log(inpOctaves.value());
     redraw();
     /*if(isLooping()){
         noLoop();
