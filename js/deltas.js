@@ -1,3 +1,5 @@
+/* TODO: Begin with water source */
+
 // some global params
 const CANVASWIDTH = 400;
 const CANVASHEIGHT = 750;
@@ -62,15 +64,14 @@ class DeltaScene{
     }
 
     drawTerain(baseColor = [255,255,255]){
-        let currElevation, currERatio, currColor;
+        let currElevation, currERatio;
         for(let i=0;i<this.#width;i++){
             for(let j=0;j<this.#height;j++){
                 currElevation = this.terain.array[i][j];
                 currERatio = currElevation / this.#maxElevation;
-                currColor = [baseColor[0] * currERatio,
-                             baseColor[1] * currERatio,
-                             baseColor[2] * currERatio]
-                fill(...currColor);
+                fill(baseColor[0] * currERatio,
+                     baseColor[1] * currERatio,
+                     baseColor[2] * currERatio);
                 rect(i*DOWNSCALE,
                     j*DOWNSCALE,
                     DOWNSCALE,
@@ -127,11 +128,10 @@ class DeltaScene{
                     currDepth = this.water.array[i][j];
                     if(currDepth > 0){
                         currDRatio = currDepth / this.#maxWaterDepth;
-                        currColor = [baseColor[0] * currDRatio,
-                                    baseColor[1] * currDRatio,
-                                    baseColor[2] * currDRatio,
-                                    alpha];
-                        fill(...currColor);
+                        fill(baseColor[0] * currDRatio,
+                             baseColor[1] * currDRatio,
+                             baseColor[2] * currDRatio,
+                             alpha);
                         rect(i*DOWNSCALE,
                             j*DOWNSCALE,
                             DOWNSCALE,
@@ -143,8 +143,7 @@ class DeltaScene{
     }
 }
 
-let scene, inpOctaves, inpScaling, inpNoiseStrength, inpOceanDepth,
-    inpOctavesTxt;
+let scene, inpOctaves, inpScaling, inpNoiseStrength, inpOceanDepth;
 
 function deltaInit(octaves, scaling, noiseStrength, oceanDepth){
     scene = new DeltaScene(CANVASWIDTH/DOWNSCALE, CANVASHEIGHT/DOWNSCALE);
@@ -155,12 +154,35 @@ function deltaInit(octaves, scaling, noiseStrength, oceanDepth){
     scene.generateCoastline(oceanDepth);
 }
 
+function createSliderGroupItem(text, start, min, max, step){
+    let sliderTxt = createDiv(text);
+    sliderTxt.parent("sliders");
+
+    let slider = createInput("", "range");
+    slider.elt.min = min;
+    slider.elt.max = max;
+    slider.elt.step = step;
+    slider.elt.value = text; // BUG: input slider initial position is wrong
+    slider.parent("sliders");
+
+    let sliderVal = createDiv(start.toString());
+    sliderVal.parent("sliders");
+
+    slider.elt.oninput = function(){
+        sliderVal.elt.innerHTML = slider.value().toString();
+        console.debug("setting " + self.name + ".elt.innerHTML to", slider.value().toString())
+    }
+
+    return slider;
+}
+
 let t1, t2;
 
 function setup() {
 
     // canvas setup
-    createCanvas(CANVASWIDTH, CANVASHEIGHT);
+    var deltaCanvas = createCanvas(CANVASWIDTH, CANVASHEIGHT);
+    deltaCanvas.parent("p5canvas")
     noStroke();
     t1=100;
     background(t1);
@@ -169,16 +191,10 @@ function setup() {
     noLoop();
 
     // create input boxes
-    inpOctaves = createInput("4", "range");
-    inpOctaves.elt.min = 1;
-    inpOctaves.elt.max = 10;
-    inpOctaves.position(0,CANVASHEIGHT+100);
-    inpOctavesTxt = createDiv(inpOctaves.value().toString());
-    inpOctavesTxt.position(200,CANVASHEIGHT+100)
-    inpOctavesTxt.style.color = "white";
-    inpOctaves.elt.oninput = function(){
-        inpOctavesTxt.innerHTML = inpOctaves.value();
-    }
+    inpOctaves = createSliderGroupItem("Octaves:",4,1,10,1);
+    inpScaling = createSliderGroupItem("Scaling:",0.5,0.1,1,0.1);
+    inpNoiseStrength = createSliderGroupItem("Noise strengh:",0.2,0.1,1,0.1);
+    inpOceanDepth = createSliderGroupItem("Ocean depth:",0.2,0.1,1,0.1);
 }
 
 function draw() {
@@ -193,10 +209,10 @@ function draw() {
 }
 
 // move forward one frame on click
+// TODO: functions to draw based on control div
 function mouseClicked(){
     t1+=10;
     background(t1);
-    console.log(inpOctaves.value());
     redraw();
     /*if(isLooping()){
         noLoop();

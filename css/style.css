@@ -16,3 +16,30 @@ body {
     background: #13111C; /* Obsidian dark mode */
     /* https://mypalettetool.com/blog/dark-mode-color-palettes */
 }
+
+.containter {
+    flex-direction: column;
+}
+
+#sliders {
+    display:grid;
+    grid-template-columns: auto auto auto;
+    padding: 10px;
+}
+
+#sliders div{
+    color: #f0f0f0;
+    text-align: center;
+}
+
+#control{
+    /*beginning; back; play; pause; forward one; end; frame count*/
+    display:grid;
+    grid-template-columns: auto auto auto auto auto auto auto;
+}
+
+/*#p5canvas {
+    display:block;
+    position:relative;
+    clear:both;
+}*/
