@@ -143,7 +143,11 @@ class DeltaScene{
     }
 }
 
+// drawing vars
 let scene, inpOctaves, inpScaling, inpNoiseStrength, inpOceanDepth;
+// UI related vars
+let maxFrame=0, currFrame=0, frames;
+let slidersParent = document.getElementById("sliders");
 
 function deltaInit(octaves, scaling, noiseStrength, oceanDepth){
     scene = new DeltaScene(CANVASWIDTH/DOWNSCALE, CANVASHEIGHT/DOWNSCALE);
@@ -155,18 +159,19 @@ function deltaInit(octaves, scaling, noiseStrength, oceanDepth){
 }
 
 function createSliderGroupItem(text, start, min, max, step){
-    let sliderTxt = createDiv(text);
-    sliderTxt.parent("sliders");
+    let sliderTxt = document.createElement("div");
+    sliderTxt.innerHTML = text;
+    slidersParent.append(sliderTxt);
 
     let slider = createInput("", "range");
     slider.elt.min = min;
     slider.elt.max = max;
     slider.elt.step = step;
     slider.elt.value = text; // BUG: input slider initial position is wrong
-    slider.parent("sliders");
+    slider.parent(slidersParent);
 
     let sliderVal = createDiv(start.toString());
-    sliderVal.parent("sliders");
+    sliderVal.parent(slidersParent);
 
     slider.elt.oninput = function(){
         sliderVal.elt.innerHTML = slider.value().toString();
@@ -174,6 +179,18 @@ function createSliderGroupItem(text, start, min, max, step){
     }
 
     return slider;
+}
+
+function createControlBar(){
+    // TODO: finish control bar
+    let controlParent = document.getElementById("control");
+    for(let i=0;i<7;i++){
+        let beginningButton = document.createElement("button");
+        beginningButton.setAttribute("aria-label","To beginning of animation");
+        beginningButton.innerHTML = '<img src="../assets/icons8-skip-to-start-100.png">';
+        controlParent.append(beginningButton);
+    }
+    return;
 }
 
 let t1, t2;
@@ -190,6 +207,8 @@ function setup() {
     // wait to animate at first
     noLoop();
 
+    // create control bar
+    createControlBar();
     // create input boxes
     inpOctaves = createSliderGroupItem("Octaves:",4,1,10,1);
     inpScaling = createSliderGroupItem("Scaling:",0.5,0.1,1,0.1);

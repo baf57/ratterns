@@ -21,25 +21,29 @@ body {
     flex-direction: column;
 }
 
-#sliders {
-    display:grid;
-    grid-template-columns: auto auto auto;
-    padding: 10px;
+#ui button {
+    height: 100%;
 }
 
-#sliders div{
+#ui button img {
+    height: 100%;
+}
+
+#ui div {
     color: #f0f0f0;
     text-align: center;
 }
 
-#control{
-    /*beginning; back; play; pause; forward one; end; frame count*/
-    display:grid;
-    grid-template-columns: auto auto auto auto auto auto auto;
+#control {
+    /* beginning; back; power/reset; play/pause; forward one; frame count*/
+    display: grid;
+    grid-template-columns: repeat(7,auto);
+    grid-auto-rows: 23px;
+    max-width: 100%;
 }
 
-/*#p5canvas {
-    display:block;
-    position:relative;
-    clear:both;
-}*/
+#sliders {
+    display: grid;
+    grid-template-columns: repeat(3,auto);
+    grid-auto-rows: 23px;
+}
